@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KHL Match Alert — Telegram-бот с расписанием матчей КХЛ</title>
+  <meta name="description" content="Учебный Telegram-бот: карточки матчей КХЛ с датой, городом и ареной в вашем часовом поясе, сводки и напоминания. Неофициальный сервис.">
+  <meta name="theme-color" content="#0B1220">
+  <meta name="color-scheme" content="dark">
+
+  <!-- Open Graph / Twitter. После публикации og:image лучше заменить на абсолютный URL (см. README) -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="KHL Match Alert — Telegram-бот с расписанием матчей КХЛ">
+  <meta property="og:description" content="Карточки матчей КХЛ с датой, городом и ареной в вашем часовом поясе. Сводки, напоминания, уведомления о переносах. Учебный неофициальный проект.">
+  <meta property="og:image" content="assets/og-cover.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="KHL Match Alert — Telegram-бот с расписанием матчей КХЛ">
+  <meta property="og:locale" content="ru_RU">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="KHL Match Alert — Telegram-бот с расписанием матчей КХЛ">
+  <meta name="twitter:description" content="Карточки матчей КХЛ в вашем часовом поясе: по запросу и по расписанию.">
+  <meta name="twitter:image" content="assets/og-cover.png">
+
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">К содержанию</a>
+
+  <!-- ============ 1. ШАПКА ============ -->
+  <header class="site-header" id="top">
+    <div class="container header__inner">
+      <a class="logo" href="#top" aria-label="KHL Match Alert — в начало страницы">
+        <svg class="logo__mark" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M3 9v5c0 2.2 4 4 9 4s9-1.8 9-4V9" fill="#0B1220" stroke="currentColor" stroke-width="1.5"/>
+          <ellipse cx="12" cy="9" rx="9" ry="4" fill="#16233A" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        <span>KHL Match Alert</span>
+      </a>
+
+      <!-- Бургер стоит перед навигацией в DOM, чтобы после открытия Tab вёл в меню -->
+      <button class="burger" type="button" data-burger aria-expanded="false" aria-controls="site-nav" aria-label="Открыть меню">
+        <span class="burger__bar" aria-hidden="true"></span>
+        <span class="burger__bar" aria-hidden="true"></span>
+        <span class="burger__bar" aria-hidden="true"></span>
+      </button>
+
+      <nav class="nav" id="site-nav" aria-label="Основная навигация">
+        <ul class="nav__list">
+          <li><a class="nav__link" href="#features">Возможности</a></li>
+          <li><a class="nav__link" href="#commands">Команды</a></li>
+          <li><a class="nav__link" href="#demo">Демо</a></li>
+          <li><a class="nav__link" href="#stack">Стек</a></li>
+        </ul>
+        <div class="nav__actions">
+          <a class="btn btn--ghost btn--sm" data-link="repo" href="https://github.com/your-user/khl-match-alert" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a class="btn btn--primary btn--sm" data-link="bot" href="https://t.me/your_bot" target="_blank" rel="noopener noreferrer">Открыть бота</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+
+    <!-- ============ 2. HERO ============ -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero__grid">
+        <div class="hero__content">
+          <p class="badge">Учебный проект · неофициальный сервис</p>
+          <h1 class="hero__title" id="hero-title">Матчи КХЛ — в Telegram, без лишнего</h1>
+          <p class="hero__lead">Бот присылает карточки матчей с датой, городом и ареной — сразу в вашем часовом поясе. По запросу, по расписанию и перед началом игры.</p>
+          <div class="hero__cta">
+            <a class="btn btn--primary" data-link="bot" href="https://t.me/your_bot" target="_blank" rel="noopener noreferrer">Открыть бота</a>
+            <a class="btn btn--ghost" href="#demo">Посмотреть демо</a>
+          </div>
+          <ul class="facts">
+            <li class="facts__item"><span class="facts__value">11</span> команд</li>
+            <li class="facts__item">Синхронизация каждые <span class="facts__value">15 минут</span></li>
+            <li class="facts__item">Часовой пояс — <span class="facts__value">IANA</span></li>
+          </ul>
+        </div>
+
+        <div class="hero__visual">
+          <!-- Карточка телефона: размеры зафиксированы в CSS, сдвигов вёрстки нет -->
+          <div class="phone" role="img" aria-label="Макет чата: в ответ на команду /today бот присылает карточку матча Авангард — Металлург Мг, 27 октября 2026, 17:00 по московскому времени, Омск, «G-Drive Арена»">
+            <div class="phone__screen">
+              <div class="chat-head">
+                <span class="avatar" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" focusable="false">
+                    <path d="M3 9v5c0 2.2 4 4 9 4s9-1.8 9-4V9" fill="#0B1220" stroke="#E8EEF7" stroke-width="1.5"/>
+                    <ellipse cx="12" cy="9" rx="9" ry="4" fill="#16233A" stroke="#E8EEF7" stroke-width="1.5"/>
+                  </svg>
+                </span>
+                <span class="chat-head__meta">
+                  <span class="chat-head__name">KHL Match Alert</span>
+                  <span class="chat-head__status">бот</span>
+                </span>
+              </div>
+              <div class="phone__body">
+                <span class="chat-date">27 октября</span>
+                <div class="msg-group msg-group--user">
+                  <div class="msg msg--user"><p class="msg__text">/today</p><span class="msg__time">10:02</span></div>
+                </div>
+                <div class="msg-group msg-group--bot">
+                  <!-- Текст ниже выводится с white-space: pre-line, поэтому переносы строк значимы -->
+                  <div class="msg msg--bot"><p class="msg__text">🏒 КХЛ · Регулярный чемпионат
+
+📅 27 октября 2026, вторник
+🕐 17:00 (Europe/Moscow, UTC+03:00)
+
+🏟 <span class="msg__team">Авангард</span> — <span class="msg__team">Металлург Мг</span>
+📍 Город: Омск
+🏛 Арена: «G-Drive Арена»
+
+🔔 Напоминание: за 2 ч
+🕓 Время указано в Europe/Moscow</p><span class="msg__time">10:02</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 3. ВОЗМОЖНОСТИ ============ -->
+    <section class="section" id="features" aria-labelledby="features-title">
+      <div class="container">
+        <div class="section__head">
+          <h2 class="section__title" id="features-title">Возможности</h2>
+          <p class="section__lead">Бот делает одно: вовремя сообщает о матчах КХЛ в вашем часовом поясе. Без новостей, ставок и рекламы.</p>
+        </div>
+
+        <ul class="features">
+          <li class="feature">
+            <span class="feature__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                <rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/>
+              </svg>
+            </span>
+            <h3 class="feature__title">Расписание по запросу</h3>
+            <p class="feature__text">Команды <code>/today</code>, <code>/tomorrow</code> и <code>/week</code> показывают матчи на нужный период. Длинные списки делятся на страницы, до 10 карточек на каждой.</p>
+          </li>
+          <li class="feature">
+            <span class="feature__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                <circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.6 2.6 14.4 0 17M12 3.5c-2.6 2.6-2.6 14.4 0 17"/>
+              </svg>
+            </span>
+            <h3 class="feature__title">Ваш часовой пояс</h3>
+            <p class="feature__text">Время начала пересчитывается в пояс из справочника IANA. По умолчанию — Europe/Moscow, сменить можно командой <code>/timezone</code>.</p>
+          </li>
+          <li class="feature">
+            <span class="feature__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                <rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>
+              </svg>
+            </span>
+            <h3 class="feature__title">Ежедневная сводка</h3>
+            <p class="feature__text">Каждый день в 10:00 по вашему местному времени — матчи подписанных команд на сегодня. Время сводки можно изменить.</p>
+          </li>
+          <li class="feature">
+            <span class="feature__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                <path d="M6 16v-5a6 6 0 1 1 12 0v5l1.5 2h-15L6 16Z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>
+              </svg>
+            </span>
+            <h3 class="feature__title">Напоминание до матча</h3>
+            <p class="feature__text">Сообщение за N часов до начала игры. По умолчанию — за 2 часа, значение меняется командой <code>/notify remind</code>.</p>
+          </li>
+          <li class="feature">
+            <span class="feature__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                <path d="M4.5 12a7.5 7.5 0 0 1 12.8-5.3L19.5 9M19.5 4.5V9H15M19.5 12a7.5 7.5 0 0 1-12.8 5.3L4.5 15M4.5 19.5V15H9"/>
+              </svg>
+            </span>
+            <h3 class="feature__title">Перенос и отмена</h3>
+            <p class="feature__text">Если матч перенесли или отменили, придёт ровно одно уведомление. Повторы отсекает ключ идемпотентности.</p>
+          </li>
+          <li class="feature">
+            <span class="feature__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                <path d="M12 3.5 5 6v5.5c0 4.2 3 7.6 7 9 4-1.4 7-4.8 7-9V6l-7-2.5Z"/><path d="m9 12 2 2 4-4"/>
+              </svg>
+            </span>
+            <h3 class="feature__title">Устойчивость</h3>
+            <p class="feature__text">Если источник недоступен, бот отвечает по данным из своей БД и помечает их как устаревшие.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ 4. КОМАНДЫ ============ -->
+    <section class="section" id="commands" aria-labelledby="commands-title">
+      <div class="container">
+        <div class="section__head">
+          <h2 class="section__title" id="commands-title">Команды</h2>
+          <p class="section__lead">Ботом управляют одиннадцать команд. Аргументы пишутся через пробел после команды.</p>
+        </div>
+
+        <div class="table-wrap" role="region" aria-label="Таблица команд бота" tabindex="0">
+          <table class="commands">
+            <caption class="visually-hidden">Команды бота KHL Match Alert: назначение и примеры</caption>
+            <thead>
+              <tr>
+                <th scope="col">Команда</th>
+                <th scope="col">Что делает</th>
+                <th scope="col">Пример</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row"><code>/start</code></th>
+                <td>Регистрирует пользователя с часовым поясом Europe/Moscow по умолчанию, присылает приветствие и список команд</td>
+                <td><span class="examples"><code>/start</code></span></td>
+              </tr>
+              <tr>
+                <th scope="row"><code>/today</code></th>
+                <td>Матчи на текущую дату в часовом поясе пользователя</td>
+                <td><span class="examples"><code>/today</code></span></td>
+              </tr>
+              <tr>
+                <th scope="row"><code>/tomorrow</code></th>
+                <td>Матчи на следующую дату</td>
+                <td><span class="examples"><code>/tomorrow</code></span></td>
+              </tr>
+              <tr>
+                <th scope="row"><code>/week</code></th>
+                <td>7 дней с текущей даты, группировка по датам, постраничный вывод</td>
+                <td><span class="examples"><code>/week</code></span></td>
+              </tr>
+              <tr>
+                <th scope="row"><code>/team</code></th>
+                <td>Поиск по названию или аббревиатуре: 5 ближайших и 5 прошедших матчей</td>
+                <td><span class="examples"><code>/team СКА</code><code>/team Авангард</code></span></td>
+              </tr>
+              <tr>
+                <th scope="row"><code>/subscribe</code></th>
+                <td>Подписка на выбранные команды</td>
+                <td><span class="examples"><code>/subscribe</code></span></td>
+              </tr>
+              <tr>
+                <th scope="row"><code>/notify</code></th>
+                <td>Параметры уведомлений: время ежедневной сводки, напоминание за N часов, отключение</td>
+                <td><span class="examples"><code>/notify digest 10:00</code><code>/notify remind 2</code><code>/notify off</code></span></td>
+              </tr>
+              <tr>
+                <th scope="row"><code>/timezone</code></th>
+                <td>Установка часового пояса из справочника IANA</td>
+                <td><span class="examples"><code>/timezone Asia/Vladivostok</code></span></td>
+              </tr>
+              <tr>
+                <th scope="row"><code>/unsubscribe</code></th>
+                <td>Отключение уведомлений и подписок</td>
+                <td><span class="examples"><code>/unsubscribe</code></span></td>
+              </tr>
+              <tr>
+                <th scope="row"><code>/status</code></th>
+                <td>Часовой пояс, команды, состояние уведомлений, время последней синхронизации, число отправок за 7 дней</td>
+                <td><span class="examples"><code>/status</code></span></td>
+              </tr>
+              <tr>
+                <th scope="row"><code>/help</code></th>
+                <td>Справка, форматы аргументов, примеры, дисклеймер</td>
+                <td><span class="examples"><code>/help</code></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 5. ДЕМО ============ -->
+    <section class="section" id="demo" aria-labelledby="demo-title">
+      <div class="container">
+        <div class="section__head">
+          <h2 class="section__title" id="demo-title">Демо сообщений</h2>
+          <p class="section__lead">Нажмите на команду, чтобы увидеть ответ бота. Это макет: данные тестовые, запросы никуда не отправляются.</p>
+        </div>
+
+        <div class="demo" data-demo>
+          <div class="demo__panel">
+            <p class="demo__label" id="demo-label">Выберите команду</p>
+            <div class="demo__buttons" role="group" aria-labelledby="demo-label">
+              <button type="button" class="cmd-btn" data-scenario="start" aria-pressed="false">
+                <span class="cmd-btn__cmd">/start</span><span class="cmd-btn__hint">регистрация и список команд</span>
+              </button>
+              <button type="button" class="cmd-btn" data-scenario="week" aria-pressed="false">
+                <span class="cmd-btn__cmd">/week</span><span class="cmd-btn__hint">7 дней, постранично</span>
+              </button>
+              <button type="button" class="cmd-btn" data-scenario="team" aria-pressed="false">
+                <span class="cmd-btn__cmd">/team СКА</span><span class="cmd-btn__hint">матчи одной команды</span>
+              </button>
+              <button type="button" class="cmd-btn" data-scenario="subscribe" aria-pressed="false">
+                <span class="cmd-btn__cmd">/subscribe</span><span class="cmd-btn__hint">выбор команд</span>
+              </button>
+              <button type="button" class="cmd-btn" data-scenario="notify" aria-pressed="false">
+                <span class="cmd-btn__cmd">/notify digest 10:00</span><span class="cmd-btn__hint">время сводки</span>
+              </button>
+              <button type="button" class="cmd-btn" data-scenario="timezone" aria-pressed="false">
+                <span class="cmd-btn__cmd">/timezone Asia/Vladivostok</span><span class="cmd-btn__hint">смена часового пояса</span>
+              </button>
+              <button type="button" class="cmd-btn" data-scenario="status" aria-pressed="false">
+                <span class="cmd-btn__cmd">/status</span><span class="cmd-btn__hint">текущие настройки</span>
+              </button>
+              <button type="button" class="cmd-btn" data-scenario="help" aria-pressed="false">
+                <span class="cmd-btn__cmd">/help</span><span class="cmd-btn__hint">справка и дисклеймер</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="demo__chat">
+            <div class="chat-head">
+              <span class="avatar" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" focusable="false">
+                  <path d="M3 9v5c0 2.2 4 4 9 4s9-1.8 9-4V9" fill="#0B1220" stroke="#E8EEF7" stroke-width="1.5"/>
+                  <ellipse cx="12" cy="9" rx="9" ry="4" fill="#16233A" stroke="#E8EEF7" stroke-width="1.5"/>
+                </svg>
+              </span>
+              <span class="chat-head__meta">
+                <span class="chat-head__name">KHL Match Alert</span>
+                <span class="chat-head__status">бот · макет</span>
+              </span>
+              <button type="button" class="btn btn--ghost btn--xs chat-head__reset" data-demo-reset>Сбросить</button>
+            </div>
+
+            <div class="chat-log" data-demo-log role="log" aria-live="polite" aria-label="Переписка с ботом (макет)" tabindex="0">
+              <p class="chat-log__empty" data-demo-empty>Выберите команду — здесь появится ответ бота.</p>
+            </div>
+
+            <p class="demo__note">Демонстрация на тестовых данных. Живой бот отвечает в Telegram.</p>
+          </div>
+        </div>
+        <noscript><p class="noscript">Для интерактивного демо включите JavaScript.</p></noscript>
+      </div>
+    </section>
+
+    <!-- ============ 6. СТЕК И АРХИТЕКТУРА ============ -->
+    <section class="section" id="stack" aria-labelledby="stack-title">
+      <div class="container">
+        <div class="section__head">
+          <h2 class="section__title" id="stack-title">Стек и архитектура</h2>
+          <p class="section__lead">Четыре слоя, каждый обращается только к следующему. Данные источника попадают в бот уже проверенными pydantic-моделями.</p>
+        </div>
+
+        <ul class="chips" aria-label="Технологии">
+          <li class="chip">Python 3.11</li>
+          <li class="chip">aiogram 3.x</li>
+          <li class="chip">SQLAlchemy 2.x</li>
+          <li class="chip">Alembic</li>
+          <li class="chip">APScheduler</li>
+          <li class="chip">httpx</li>
+          <li class="chip">pydantic 2</li>
+          <li class="chip">SQLite / PostgreSQL 15</li>
+          <li class="chip">Docker Compose</li>
+        </ul>
+
+        <p class="layers__caption">Зависимости направлены снаружи внутрь</p>
+        <div class="layers">
+          <article class="layer">
+            <span class="layer__num">01</span>
+            <h3 class="layer__title">Presentation</h3>
+            <p class="layer__text">aiogram-роутеры, хендлеры команд, форматтеры карточек матчей</p>
+            <p class="layer__ban"><span class="layer__ban-label">Запрещено:</span> SQL-запросы, вызовы API КХЛ, бизнес-правила</p>
+          </article>
+          <div class="layers__arrow" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </div>
+          <article class="layer">
+            <span class="layer__num">02</span>
+            <h3 class="layer__title">Service</h3>
+            <p class="layer__text">Выборки матчей, подписки, идемпотентность уведомлений</p>
+            <p class="layer__ban"><span class="layer__ban-label">Запрещено:</span> импорт aiogram, форматирование сообщений, прямой SQL</p>
+          </article>
+          <div class="layers__arrow" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </div>
+          <article class="layer">
+            <span class="layer__num">03</span>
+            <h3 class="layer__title">Repository</h3>
+            <p class="layer__text">SQLAlchemy 2.x, сессии и транзакции, миграции Alembic</p>
+            <p class="layer__ban"><span class="layer__ban-label">Запрещено:</span> сетевые запросы, знание о Telegram, решения об отправке</p>
+          </article>
+          <div class="layers__arrow" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </div>
+          <article class="layer">
+            <span class="layer__num">04</span>
+            <h3 class="layer__title">Infrastructure</h3>
+            <p class="layer__text">Адаптер API КХЛ на httpx, планировщик APScheduler, конфигурация</p>
+            <p class="layer__ban"><span class="layer__ban-label">Запрещено:</span> бизнес-логика, тексты сообщений, «сырые» ответы API наружу</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 7. СТАТУС ПРОЕКТА ============ -->
+    <section class="section" id="status" aria-labelledby="status-title">
+      <div class="container">
+        <div class="section__head">
+          <h2 class="section__title" id="status-title">Статус проекта</h2>
+          <p class="section__lead">Проект делается поэтапно. Ниже — текущее состояние работ.</p>
+        </div>
+
+        <div class="stages-box">
+          <div class="stages__summary-row">
+            <p class="stages__summary" data-stages-summary>Этапы проекта</p>
+            <ul class="legend" aria-label="Обозначения">
+              <li class="legend__item legend__item--done">готово</li>
+              <li class="legend__item legend__item--wip">в работе</li>
+              <li class="legend__item legend__item--plan">план</li>
+            </ul>
+          </div>
+          <div class="progress" aria-hidden="true"><span class="progress__bar" data-stages-bar></span></div>
+          <!-- Список заполняется из массива APP.stages в app.js -->
+          <ol class="stages" data-stages></ol>
+          <noscript><p class="noscript">Для отображения этапов включите JavaScript.</p></noscript>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 8. ССЫЛКИ ============ -->
+    <section class="section" id="links" aria-labelledby="links-title">
+      <div class="container">
+        <div class="section__head">
+          <h2 class="section__title" id="links-title">Попробовать и посмотреть код</h2>
+          <p class="section__lead">Демо выше — статичный макет на тестовых данных, оно ничего не отправляет. Живой бот работает отдельно, в Telegram.</p>
+        </div>
+
+        <div class="link-cards">
+          <a class="link-card" data-link="bot" href="https://t.me/your_bot" target="_blank" rel="noopener noreferrer">
+            <span class="link-card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M21 4 3 11l6 2.5M21 4l-3.5 16-8.5-6.5M21 4 9 13.5V19l3-3"/></svg>
+            </span>
+            <h3 class="link-card__title">Открыть бота в Telegram</h3>
+            <p class="link-card__text">Отправьте <code>/start</code>: бот зарегистрирует вас с часовым поясом Europe/Moscow и покажет список команд.</p>
+            <span class="link-card__url" data-link-text="bot">t.me/your_bot</span>
+          </a>
+          <a class="link-card" data-link="repo" href="https://github.com/your-user/khl-match-alert" target="_blank" rel="noopener noreferrer">
+            <span class="link-card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/></svg>
+            </span>
+            <h3 class="link-card__title">Исходный код на GitHub</h3>
+            <p class="link-card__text">Архитектура, миграции Alembic, Docker Compose и инструкция по запуску — в репозитории.</p>
+            <span class="link-card__url" data-link-text="repo">github.com/your-user/khl-match-alert</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ 9. ФУТЕР ============ -->
+  <footer class="site-footer">
+    <div class="container">
+      <p class="footer__disclaimer">Сервис неофициальный: не аффилирован с КХЛ, клубами лиги и Telegram, не использует официальные API лиги. Учебный проект, без рекламы и монетизации. Данные о расписании носят справочный характер и могут быть неполными или устаревшими.</p>
+      <div class="footer__bottom">
+        <p class="footer__copy">© <span data-year>2026</span> KHL Match Alert · учебный проект</p>
+        <ul class="footer__links">
+          <li><a data-link="repo" href="https://github.com/your-user/khl-match-alert" target="_blank" rel="noopener noreferrer">Репозиторий</a></li>
+          <li><a data-link="bot" href="https://t.me/your_bot" target="_blank" rel="noopener noreferrer">Справка бота: /help</a></li>
+          <li><a href="#top">Наверх</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
